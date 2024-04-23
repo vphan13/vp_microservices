@@ -1,0 +1,46 @@
+[Unit]
+Description=pihole (Docker)
+# start this unit only after docker has started
+After=docker.service
+Requires=docker.service
+ 
+[Service]
+TimeoutStartSec=0
+Restart=always
+# The following lines start with '-' because they are allowed to fail without
+# causing startup to fail.
+#
+# Kill the old instance, if it's still running for some reason
+ExecStartPre=-/usr/bin/docker kill pihole
+# Remove the old instance, if it stuck around
+ExecStartPre=-/usr/bin/docker rm pihole
+# Pull the latest version of the container; NOTE you should be careful to
+# pull a tagged version, that way you won't accidentially pull a major-version
+# upgrade and break your service!
+ExecStartPre=-/usr/bin/docker pull "pihole/pihole:latest"
+# Start the actual service; note we remove the instance after it exits
+#
+#ExecStart=/usr/bin/docker run --rm --net=macvlan20 --hostname='pihole' --ip=10.0.20.2 --expose 53 --expose 53/udp -p 7171:80 -v /opt/docker-pi-hole/02-lan.conf:/etc/dnsmasq.d/02-lan.conf -v /opt/docker-pi-hole/resolv.conf:/etc/resolv.conf -v /opt/docker-pi-hole/pihole/:/etc/pihole/ --name pihole -e ADMIN_PASS=pihole -e DNS1=1.1.1.1 -e DNS2=1.0.0.1 -e ServerIP=10.0.20.2 lplab/pihole:latest
+
+ExecStart=/usr/bin/docker run --rm \
+	--net=macvlan20 \
+	--hostname='pihole' \
+	--ip=10.0.20.2 \
+	--expose 53 \
+	--expose 53/udp -p 7171:80 \
+	-v /opt/docker-pi-hole/02-lan.conf:/etc/dnsmasq.d/02-lan.conf \
+	-v /opt/docker-pi-hole/resolv.conf:/etc/resolv.conf \
+	-v /opt/docker-pi-hole/pihole/:/etc/pihole/ \
+	--name pihole \
+	-e ADMIN_PASS=pihole \
+	-e DNS1=1.1.1.1 \
+	-e DNS2=1.0.0.1 \
+	-e ServerIP=10.0.20.2 \
+	pihole/pihole:latest
+#lplab/pihole:latest
+#
+# On exit, stop the container
+ExecStop=/usr/bin/docker stop pihole
+ 
+[Install]
+WantedBy=multi-user.target
