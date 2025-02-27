@@ -1,0 +1,68 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    cpuset: 0-7
+    environment:
+      PUID: '911'
+      PGID: '911'
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+    image: linuxserver/jellyfin:latest
+    hostname: jellyfin
+    ports:
+    - 8920:8920
+    - 8096:8096
+    volumes:
+    - /opt/docker_jellyfin/config:/config
+    - /zfs_phan/complete/Movies:/data/movies
+    - /zfs_phan/complete/MUSIC:/data/music
+    - /zfs_phan/complete/Movies4K:/data/movies4k
+    - /zfs_phan/complete/TV4K:/data/tv4k
+    - /zfs_phan/complete/TV:/data/tvshows
+    - /opt/docker_jellyfin/transcode:/transcode
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+  sabnzbd:
+    container_name: sabnzbd
+    image: linuxserver/sabnzbd
+    hostname: sabnzbd
+    ports:
+    - 8080:8080
+    volumes:
+    - /zfs_phan/MISC:/media
+    - /zfs_phan/complete/SABnzbd:/config
+    - /zfs_phan/complete:/downloads
+    - /SSD/incomplete:/incomplete-downloads
+    - /zfs_phan/complete:/complete
+  sonarr:
+    container_name: sonarr
+    environment:
+      PUID: '911'
+      PGID: '911'
+    image: linuxserver/sonarr
+    hostname: sonarr
+    ports:
+    - 8989:8989
+    volumes:
+    - /zfs_phan/complete/sonarr:/config
+    - /zfs_phan/complete/TV:/tv
+    - /etc/localtime:/etc/localtime:ro 
+  radarr:
+    container_name: radarr
+    environment:
+      PUID: '911'
+      PGID: '911'
+    image: linuxserver/radarr
+    hostname: radarr
+    ports:
+    - 7878:7878
+    volumes:
+    - /zfs_phan/complete/radarr:/config
+    - /zfs_phan/complete/Movies:/movies
+    - /etc/localtime:/etc/localtime:ro
